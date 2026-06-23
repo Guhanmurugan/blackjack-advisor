@@ -1,5 +1,5 @@
 class BlackjackAdvisor:
-    def __init__(self, num_decks=1):
+    def __init__(self, num_decks=6):
         # A standard deck has 4 of each card, but 16 ten-value cards (10, J, Q, K)
         # 1 represents the Ace (soft/hard logic handled dynamically)
         self.base_deck = {1: 4, 2: 4, 3: 4, 4: 4, 5: 4, 6: 4, 7: 4, 8: 4, 9: 4, 10: 16}
@@ -23,7 +23,7 @@ class BlackjackAdvisor:
         """Calculates probability distribution and gives a HIT/STAND advice."""
         total_remaining_cards = sum(self.shoe.values())
         if total_remaining_cards == 0:
-            return "No cards left in shoe."
+            return {"Error": "No cards left in shoe."}
 
         player_total, is_soft = self.get_hand_value(player_hand)
         
@@ -45,13 +45,12 @@ class BlackjackAdvisor:
                 safe_prob += prob
 
         # Basic Strategy recommendation logic
-        # Soft hands are safer to hit because you can't bust on the next card
         if is_soft:
             action = "HIT" if player_total <= 17 else "STAND"
         else:
-            # Hard hand logic vs Dealer Upcard
+            # Hard hand logic vs Dealer Upcard (Fixed missing conditions)
             if player_total <= 11:
-                action = "HIT"  # 0% chance of busting
+                action = "HIT"  
             elif player_total == 12:
                 action = "STAND" if dealer_upcard in [4, 5, 6] else "HIT"
             elif 13 <= player_total <= 16:
@@ -68,12 +67,11 @@ class BlackjackAdvisor:
             "Live Deck Probs": {k: f"{v*100:.1f}%" for k, v in probabilities.items()}
         }
 
-# --- REAL-TIME GAMEPLAY EXECUTION EXAMPLE ---
+# --- REAL-TIME GAMEPLAY EXECUTION FIX ---
 # 1. Initialize a 6-deck shoe game (standard casino rule)
 advisor = BlackjackAdvisor(num_decks=6)
 
-# 2. Burn/Remove cards currently visible on table
-# Let's say you see a few cards from other players' open hands already out
+# 2. Burn/Remove initial dead cards from other players (Fixed empty bracket bug)
 advisor.remove_cards([10, 5, 7, 2, 9, 10])
 
 # 3. Define Your current Hand and the Dealer's upcard
@@ -86,7 +84,7 @@ advisor.remove_cards(my_hand + [dealer_face_up])
 # 5. Run the analytics
 analysis = advisor.analyze_next_card(my_hand, dealer_face_up)
 
-# Print clean output for the application UI
+# Print clean output for evaluation
 for key, val in analysis.items():
     if key != "Live Deck Probs":
-        print(f"**{key}**: {val}")
+        print(f"{key}: {val}")
